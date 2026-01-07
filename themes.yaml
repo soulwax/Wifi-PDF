@@ -137,3 +137,231 @@ themes:
       has_border: false
       border_width: 0
       corner_size: 0
+
+  orange:
+    name: "Orange"
+    description: "Vibrant orange theme with warm, energetic colors"
+    colors:
+      primary: "#EA580C"
+      secondary: "#C2410C"
+      accent: "#FB923C"
+      background: "#FFF7ED"
+      info_box: "#FFEDD5"
+      text: "#7C2D12"
+      text_secondary: "#9A3412"
+      border: "#FDBA74"
+      title: "#FFFFFF"
+    layout:
+      has_top_bar: true
+      has_border: false
+      border_width: 0
+      corner_size: 0
+
+  teal:
+    name: "Teal"
+    description: "Fresh teal theme with ocean-inspired colors"
+    colors:
+      primary: "#0D9488"
+      secondary: "#0F766E"
+      accent: "#2DD4BF"
+      background: "#F0FDFA"
+      info_box: "#CCFBF1"
+      text: "#134E4A"
+      text_secondary: "#0F766E"
+      border: "#5EEAD4"
+      title: "#FFFFFF"
+    layout:
+      has_top_bar: true
+      has_border: false
+      border_width: 0
+      corner_size: 0
+
+  pink:
+    name: "Pink"
+    description: "Soft pink theme with elegant, feminine colors"
+    colors:
+      primary: "#DB2777"
+      secondary: "#BE185D"
+      accent: "#F472B6"
+      background: "#FDF2F8"
+      info_box: "#FCE7F3"
+      text: "#831843"
+      text_secondary: "#9F1239"
+      border: "#F9A8D4"
+      title: "#FFFFFF"
+    layout:
+      has_top_bar: true
+      has_border: false
+      border_width: 0
+      corner_size: 0
+
+  amber:
+    name: "Amber"
+    description: "Warm amber theme with golden, sunny colors"
+    colors:
+      primary: "#D97706"
+      secondary: "#B45309"
+      accent: "#FBBF24"
+      background: "#FFFBEB"
+      info_box: "#FEF3C7"
+      text: "#78350F"
+      text_secondary: "#92400E"
+      border: "#FCD34D"
+      title: "#FFFFFF"
+    layout:
+      has_top_bar: true
+      has_border: false
+      border_width: 0
+      corner_size: 0
+
+  navy:
+    name: "Navy"
+    description: "Classic navy blue theme with professional elegance"
+    colors:
+      primary: "#1E40AF"
+      secondary: "#1E3A8A"
+      accent: "#3B82F6"
+      background: "#EFF6FF"
+      info_box: "#DBEAFE"
+      text: "#1E3A8A"
+      text_secondary: "#1E40AF"
+      border: "#93C5FD"
+      title: "#FFFFFF"
+    layout:
+      has_top_bar: true
+      has_border: false
+      border_width: 0
+      corner_size: 0
+
+  gray:
+    name: "Gray"
+    description: "Sophisticated monochrome gray theme"
+    colors:
+      primary: "#4B5563"
+      secondary: "#374151"
+      accent: "#6B7280"
+      background: "#F9FAFB"
+      info_box: "#F3F4F6"
+      text: "#111827"
+      text_secondary: "#4B5563"
+      border: "#D1D5DB"
+      title: "#FFFFFF"
+    layout:
+      has_top_bar: true
+      has_border: false
+      border_width: 0
+      corner_size: 0
+
+  sunset:
+    name: "Sunset"
+    description: "Warm sunset theme with orange and pink gradients"
+    colors:
+      primary: "#F97316"
+      secondary: "#EA580C"
+      accent: "#FB923C"
+      background: "#FFF7ED"
+      info_box: "#FFEDD5"
+      text: "#7C2D12"
+      text_secondary: "#9A3412"
+      border: "#FDBA74"
+      title: "#FFFFFF"
+    layout:
+      has_top_bar: true
+      has_border: false
+      border_width: 0
+      corner_size: 0
+
+  ocean:
+    name: "Ocean"
+    description: "Cool ocean theme with deep blue and cyan colors"
+    colors:
+      primary: "#0891B2"
+      secondary: "#0E7490"
+      accent: "#06B6D4"
+      background: "#ECFEFF"
+      info_box: "#CFFAFE"
+      text: "#164E63"
+      text_secondary: "#155E75"
+      border: "#67E8F9"
+      title: "#FFFFFF"
+    layout:
+      has_top_bar: true
+      has_border: false
+      border_width: 0
+      corner_size: 0
+
+  forest:
+    name: "Forest"
+    description: "Natural forest theme with deep green colors"
+    colors:
+      primary: "#166534"
+      secondary: "#14532D"
+      accent: "#22C55E"
+      background: "#F0FDF4"
+      info_box: "#D1FAE5"
+      text: "#14532D"
+      text_secondary: "#166534"
+      border: "#86EFAC"
+      title: "#FFFFFF"
+    layout:
+      has_top_bar: true
+      has_border: false
+      border_width: 0
+      corner_size: 0
+
+  indigo:
+    name: "Indigo"
+    description: "Rich indigo theme with deep purple-blue colors"
+    colors:
+      primary: "#4F46E5"
+      secondary: "#4338CA"
+      accent: "#6366F1"
+      background: "#EEF2FF"
+      info_box: "#E0E7FF"
+      text: "#312E81"
+      text_secondary: "#4338CA"
+      border: "#A5B4FC"
+      title: "#FFFFFF"
+    layout:
+      has_top_bar: true
+      has_border: false
+      border_width: 0
+      corner_size: 0
+
+  rose:
+    name: "Rose"
+    description: "Elegant rose theme with soft pink and red tones"
+    colors:
+      primary: "#E11D48"
+      secondary: "#BE123C"
+      accent: "#FB7185"
+      background: "#FFF1F2"
+      info_box: "#FFE4E6"
+      text: "#881337"
+      text_secondary: "#9F1239"
+      border: "#FECDD3"
+      title: "#FFFFFF"
+    layout:
+      has_top_bar: true
+      has_border: false
+      border_width: 0
+      corner_size: 0
+
+  cyan:
+    name: "Cyan"
+    description: "Bright cyan theme with vibrant blue-green colors"
+    colors:
+      primary: "#06B6D4"
+      secondary: "#0891B2"
+      accent: "#22D3EE"
+      background: "#ECFEFF"
+      info_box: "#CFFAFE"
+      text: "#164E63"
+      text_secondary: "#155E75"
+      border: "#67E8F9"
+      title: "#FFFFFF"
+    layout:
+      has_top_bar: true
+      has_border: false
+      border_width: 0
+      corner_size: 0

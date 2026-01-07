@@ -74,7 +74,7 @@ This will install:
 #### 3. Verify Installation
 
 ```bash
-python generate_pdf.py --help
+python -m src.main --help
 ```
 
 You should see the help message with all available options.
@@ -120,7 +120,7 @@ WIFI_SECURITY=WPA2
 The simplest way to generate a PDF:
 
 ```bash
-python generate_pdf.py
+python -m src.main
 ```
 
 This will:
@@ -134,32 +134,32 @@ This will:
 
 ```bash
 # Red theme
-python generate_pdf.py --theme red
+python -m src.main --theme red
 
 # Minimal theme
-python generate_pdf.py --theme minimal
+python -m src.main --theme minimal
 
 # Dark mode theme
-python generate_pdf.py --theme dark
+python -m src.main --theme dark
 ```
 
 ### Customization
 
 ```bash
 # Larger QR code with custom title
-python generate_pdf.py --theme corporate --qr-size 0.4 --title "Guest WiFi Access"
+python -m src.main --theme corporate --qr-size 0.4 --title "Guest WiFi Access"
 
 # Custom subtitle and no footer
-python generate_pdf.py --theme green --subtitle "Scan to connect instantly" --no-footer
+python -m src.main --theme green --subtitle "Scan to connect instantly" --no-footer
 
 # Minimal theme with all customizations
-python generate_pdf.py -t minimal -s 0.3 --title "Company WiFi" --subtitle "For employees only"
+python -m src.main -t minimal -s 0.3 --title "Company WiFi" --subtitle "For employees only"
 ```
 
 ### List Available Themes
 
 ```bash
-python generate_pdf.py --list-themes
+python -m src.main --list-themes
 ```
 
 Output:
@@ -205,7 +205,7 @@ Each theme includes:
 ### Full Command Reference
 
 ```bash
-python generate_pdf.py [OPTIONS]
+python -m src.main [OPTIONS]
 ```
 
 ### Options
@@ -265,7 +265,7 @@ Display all available themes and exit. Useful for discovering theme names.
 ### Example 1: Default Usage
 
 ```bash
-python generate_pdf.py
+python -m src.main
 ```
 
 - Theme: FritzBox (default)
@@ -275,7 +275,7 @@ python generate_pdf.py
 ### Example 2: Event WiFi Card
 
 ```bash
-python generate_pdf.py --theme red --title "Event WiFi" --subtitle "Free WiFi for all attendees"
+python -m src.main --theme red --title "Event WiFi" --subtitle "Free WiFi for all attendees"
 ```
 
 - Bold red theme for visibility
@@ -285,7 +285,7 @@ python generate_pdf.py --theme red --title "Event WiFi" --subtitle "Free WiFi fo
 ### Example 3: Corporate Guest WiFi
 
 ```bash
-python generate_pdf.py -t corporate -s 0.4 --title "Guest Network Access" --no-footer
+python -m src.main -t corporate -s 0.4 --title "Guest Network Access" --no-footer
 ```
 
 - Professional corporate theme
@@ -295,7 +295,7 @@ python generate_pdf.py -t corporate -s 0.4 --title "Guest Network Access" --no-f
 ### Example 4: Minimal Office WiFi
 
 ```bash
-python generate_pdf.py --theme minimal --qr-size 0.3 --title "Office WiFi"
+python -m src.main --theme minimal --qr-size 0.3 --title "Office WiFi"
 ```
 
 - Clean, minimal design
@@ -305,7 +305,7 @@ python generate_pdf.py --theme minimal --qr-size 0.3 --title "Office WiFi"
 ### Example 5: Dark Theme for Tech Company
 
 ```bash
-python generate_pdf.py --theme dark --title "Company WiFi" --subtitle "Scan to connect"
+python -m src.main --theme dark --title "Company WiFi" --subtitle "Scan to connect"
 ```
 
 - Modern dark mode theme
@@ -316,10 +316,10 @@ python generate_pdf.py --theme dark --title "Company WiFi" --subtitle "Scan to c
 
 ```bash
 # Using short flags
-python generate_pdf.py -t green -s 0.4
+python -m src.main -t green -s 0.4
 
 # Mixing short and long flags
-python generate_pdf.py -t purple --title "My Network"
+python -m src.main -t purple --title "My Network"
 ```
 
 ## Output
@@ -432,13 +432,13 @@ pip install -r requirements.txt
 1. **Check the help message:**
 
    ```bash
-   python generate_pdf.py --help
+   python -m src.main --help
    ```
 
 2. **List available themes:**
 
    ```bash
-   python generate_pdf.py --list-themes
+   python -m src.main --list-themes
    ```
 
 3. **Verify your `.env` file:**
@@ -449,7 +449,7 @@ pip install -r requirements.txt
 4. **Test with default settings:**
 
    ```bash
-   python generate_pdf.py
+   python -m src.main
    ```
 
 ## Customizing Themes
@@ -488,19 +488,21 @@ themes:
 
 1. Open `themes.yaml`
 2. Add a new theme entry following the structure above
-3. Use the theme: `python generate_pdf.py --theme your_theme_name`
+3. Use the theme: `python -m src.main --theme your_theme_name`
 
 ### Using a Custom Themes File
 
 ```bash
-python generate_pdf.py --theme mytheme --themes-file custom-themes.yaml
+python -m src.main --theme mytheme --themes-file custom-themes.yaml
 ```
 
 ## Project Structure
 
 ```plaintext
 ./
-├── generate_pdf.py      # Main program
+├── src/
+│   ├── __init__.py     # Package initialization
+│   └── main.py         # Main application
 ├── themes.yaml          # Design theme configurations
 ├── requirements.txt     # Python dependencies
 ├── README.md           # This file
