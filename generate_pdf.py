@@ -344,10 +344,11 @@ def create_pdf(
         c.drawString((width - subtitle_width) / 2, subtitle_y, subtitle)
 
     # Display WiFi information RIGHT BELOW the QR code
-    # qr_y is the bottom of the QR code, frame extends frame_padding below it
-    # So bottom of frame is at: qr_y - frame_padding
-    # Position connection details below the frame with spacing
-    frame_bottom = qr_y - frame_padding
+    # In ReportLab: y=0 is at bottom, y increases upward
+    # qr_y is the bottom of the QR code image
+    # frame_y = qr_y - frame_padding is the bottom of the frame (frame extends below QR code)
+    # To place info BELOW the frame, we need to go DOWN (subtract from y)
+    frame_bottom = frame_y  # Bottom of the frame
     info_start_y = frame_bottom - 30 * mm  # Below QR code frame with spacing
 
     # WiFi info box dimensions
