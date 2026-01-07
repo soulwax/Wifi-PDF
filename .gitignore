@@ -220,3 +220,5 @@ __marimo__/
 qr-data.json
 qr.png
 wifi_qr_code.pdf
+output/
+tree.txt
