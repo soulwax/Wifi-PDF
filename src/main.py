@@ -1,32 +1,36 @@
 #!/usr/bin/env python3
+# File: src/main.py
+
 """
 WiFi QR Code PDF Generator
 A standalone application for generating beautiful WiFi QR code PDFs.
 """
 
+import argparse
+import hashlib
+import os
 import sys
+import tempfile
+import time
+import traceback
+from dataclasses import dataclass
+from io import BytesIO
 from pathlib import Path
+from typing import Any, Dict, Optional, cast
+
+import qrcode
+import yaml
+from dotenv import load_dotenv
+from PIL import Image
+from qrcode import constants as qrcode_constants
+from reportlab.lib.colors import HexColor
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import mm
+from reportlab.pdfgen import canvas
 
 # Add project root to path for imports
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
-
-from reportlab.lib.pagesizes import A4
-from reportlab.lib.units import mm
-from reportlab.lib.colors import HexColor
-from reportlab.pdfgen import canvas
-from PIL import Image
-import qrcode
-from qrcode import constants as qrcode_constants
-from dotenv import load_dotenv
-import os
-import tempfile
-import time
-import hashlib
-import argparse
-import yaml
-from dataclasses import dataclass
-from typing import Dict, Optional, Any, cast
 
 
 def get_project_root() -> Path:
@@ -40,7 +44,7 @@ def get_config_path(filename: str) -> Path:
 
 
 @dataclass
-class DesignTheme:
+class DesignTheme:  # pylint: disable=too-many-instance-attributes
     """Design theme configuration"""
 
     name: str
@@ -176,14 +180,59 @@ def load_wifi_data_from_env(env_path: Optional[str] = None) -> Dict[str, str]:
     return wifi_data
 
 
-def generate_wifi_qr_code(ssid: str, password: str, security: str = "WPA2") -> Image.Image:
+def load_logo_image(logo_path: str) -> Image.Image:
     """
-    Generate a WiFi QR code image from WiFi credentials.
+    Load logo image from file, supporting PNG, JPG, and SVG formats.
+
+    Args:
+        logo_path: Path to logo image file
+
+    Returns:
+        PIL Image object of the logo
+    """
+    if not os.path.exists(logo_path):
+        raise FileNotFoundError(f"Logo file not found: {logo_path}")
+
+    file_ext = os.path.splitext(logo_path)[1].lower()
+
+    # Handle SVG files
+    if file_ext == ".svg":
+        try:
+            from cairosvg import svg2png  # type: ignore[import-untyped]
+
+            # Convert SVG to PNG
+            png_data = svg2png(url=logo_path)
+            img = Image.open(BytesIO(png_data))
+            return img.convert("RGBA")
+        except ImportError:
+            raise ImportError(
+                "SVG support requires cairosvg. Install with: pip install cairosvg"
+            ) from None
+        except Exception as e:
+            raise ValueError(f"Failed to load SVG logo: {e}") from e
+
+    # Handle PNG and JPG files
+    try:
+        img = Image.open(logo_path)
+        # Convert to RGBA if needed for transparency support
+        if img.mode != "RGBA":
+            img = img.convert("RGBA")
+        return img
+    except Exception as e:
+        raise ValueError(f"Failed to load logo image: {e}") from e
+
+
+def generate_wifi_qr_code(
+    ssid: str, password: str, security: str = "WPA2", logo_path: Optional[str] = None
+) -> Image.Image:
+    """
+    Generate a WiFi QR code image from WiFi credentials, optionally with a logo.
 
     Args:
         ssid: Network SSID
         password: Network password
         security: Security type (WPA, WPA2, WEP, nopass)
+        logo_path: Optional path to logo image (PNG, JPG, or SVG)
 
     Returns:
         PIL Image object of the QR code
@@ -205,10 +254,15 @@ def generate_wifi_qr_code(ssid: str, password: str, security: str = "WPA2") -> I
 
     wifi_string = f"WIFI:T:{security};S:{ssid_escaped};P:{password_escaped};;"
 
+    # Use higher error correction if logo is present (allows logo to cover part of QR code)
+    error_correction = (
+        qrcode_constants.ERROR_CORRECT_H if logo_path else qrcode_constants.ERROR_CORRECT_M
+    )
+
     # Create QR code
     qr = qrcode.QRCode(
         version=1,
-        error_correction=qrcode_constants.ERROR_CORRECT_M,
+        error_correction=error_correction,
         box_size=10,
         border=4,
     )
@@ -216,18 +270,53 @@ def generate_wifi_qr_code(ssid: str, password: str, security: str = "WPA2") -> I
     qr.make(fit=True)
 
     # Create image
-    img = qr.make_image(fill_color="black", back_color="white")
-    return cast(Image.Image, img)
+    qr_image = qr.make_image(fill_color="black", back_color="white")
+    img = cast(Image.Image, qr_image).convert("RGBA")
+
+    # Embed logo in center if provided
+    if logo_path:
+        try:
+            logo = load_logo_image(logo_path)
+
+            # Calculate logo size (about 30% of QR code size, but ensure it's not too large)
+            qr_width, qr_height = img.size
+            logo_size = min(qr_width, qr_height) // 3  # 1/3 of QR code size
+
+            # Resize logo maintaining aspect ratio
+            logo.thumbnail((logo_size, logo_size), Image.Resampling.LANCZOS)
+
+            # Create a white background for logo (helps with QR code readability)
+            logo_bg = Image.new("RGBA", (logo_size + 20, logo_size + 20), (255, 255, 255, 255))
+            logo_x = (logo_bg.width - logo.width) // 2
+            logo_y = (logo_bg.height - logo.height) // 2
+            logo_bg.paste(logo, (logo_x, logo_y), logo)
+
+            # Calculate position to center logo in QR code
+            qr_center_x = qr_width // 2
+            qr_center_y = qr_height // 2
+            paste_x = qr_center_x - logo_bg.width // 2
+            paste_y = qr_center_y - logo_bg.height // 2
+
+            # Paste logo onto QR code
+            img.paste(logo_bg, (paste_x, paste_y), logo_bg)
+
+        except Exception as e:
+            print(f"Warning: Could not embed logo: {e}")
+            print("Generating QR code without logo...")
+
+    return cast(Image.Image, img.convert("RGB"))
 
 
-def create_pdf(
+def create_pdf(  # pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
     wifi_data: Dict[str, str],
     output_path: str,
+    *,
     theme: Optional[DesignTheme] = None,
     qr_size: Optional[float] = None,
     title: Optional[str] = None,
     subtitle: Optional[str] = None,
     show_footer: bool = True,
+    logo_path: Optional[str] = None,
 ) -> None:
     """
     Create a beautiful A4 PDF with the QR code image and WiFi information.
@@ -256,7 +345,10 @@ def create_pdf(
 
     # Generate QR code from WiFi data
     qr_img: Image.Image = generate_wifi_qr_code(
-        wifi_data["SSID"], wifi_data["Password"], wifi_data.get("Security", "WPA2")
+        wifi_data["SSID"],
+        wifi_data["Password"],
+        wifi_data.get("Security", "WPA2"),
+        logo_path=logo_path,
     )
 
     # Create PDF canvas
@@ -266,7 +358,6 @@ def create_pdf(
     # Use theme colors
     primary_color = theme.primary_color
     secondary_color = theme.secondary_color
-    accent_color = theme.accent_color
     background_color = theme.background_color
     info_box_color = theme.info_box_color
     text_color = theme.text_color
@@ -322,12 +413,12 @@ def create_pdf(
         qr_display_width = max_qr_size * aspect_ratio
 
     # Position QR code - compact spacing for title/subtitle at top
-    # Title area: accent bar (8mm) + title spacing (15mm) + title (18mm) + subtitle (12mm) + spacing (8mm) = ~61mm
-    top_space = (
-        accent_height + 15 * mm + 18 * mm + 12 * mm + 8 * mm
-        if theme.has_top_bar
-        else 18 * mm + 12 * mm + 8 * mm
-    )
+    # Title area: accent bar (8mm) + title spacing (15mm) + title (18mm)
+    # + subtitle (12mm) + spacing (8mm) = ~61mm
+    if theme.has_top_bar:
+        top_space = accent_height + 15 * mm + 18 * mm + 12 * mm + 8 * mm
+    else:
+        top_space = 18 * mm + 12 * mm + 8 * mm
     qr_x = (width - qr_display_width) / 2
     qr_y = height - top_space - qr_display_height
 
@@ -361,7 +452,8 @@ def create_pdf(
 
     # Add title text - positioned below the accent bar to avoid overlap
     if theme.has_top_bar:
-        title_y = height - accent_height - 15 * mm  # Below the accent bar with more spacing (lowered by 10mm)
+        # Below the accent bar with more spacing (lowered by 10mm)
+        title_y = height - accent_height - 15 * mm
         # Use dark text color since it's on white background now
         title_text_color = text_color
     else:
@@ -381,7 +473,7 @@ def create_pdf(
         c.setFont("Helvetica", subtitle_font_size)
         max_subtitle_width = frame_width - 20 * mm  # Leave margins within frame
         subtitle_width = c.stringWidth(subtitle, "Helvetica", subtitle_font_size)
-        
+
         # If subtitle is too wide, reduce font size
         if subtitle_width > max_subtitle_width:
             subtitle_font_size = 14
@@ -391,7 +483,7 @@ def create_pdf(
                 subtitle_font_size = 9
                 c.setFont("Helvetica", subtitle_font_size)
                 subtitle_width = c.stringWidth(subtitle, "Helvetica", subtitle_font_size)
-        
+
         # Center subtitle (centered on page, but constrained to frame width)
         subtitle_x = (width - subtitle_width) / 2
         c.drawString(subtitle_x, subtitle_y, subtitle)
@@ -465,7 +557,7 @@ def create_pdf(
     if c.stringWidth(password_text, "Courier-Bold", 13) > max_password_width:
         c.setFont("Courier-Bold", 11)
     c.drawString(info_box_x + 8 * mm, box_y + 2 * mm, password_text)
-    
+
     # Calculate bottom of password box to ensure footer doesn't overlap
     password_box_bottom = box_y
 
@@ -475,7 +567,7 @@ def create_pdf(
         footer_y = min(password_box_bottom - 18 * mm, 20 * mm)
         if footer_y < 15 * mm:  # If too close to bottom, skip footer
             footer_y = None
-        
+
         if footer_y:
             c.setFillColor(text_secondary)
             c.setFont("Helvetica", 9)
@@ -494,7 +586,7 @@ def parse_arguments() -> argparse.Namespace:
     try:
         themes = get_design_themes()
         theme_names = ", ".join(themes.keys())
-    except Exception:
+    except (FileNotFoundError, ValueError, yaml.YAMLError):
         themes = {}
         theme_names = "fritzbox, red, minimal, corporate, green, purple, dark"
 
@@ -560,10 +652,17 @@ Examples:
         help="Generate PDFs for all available themes",
     )
 
+    parser.add_argument(
+        "--logo",
+        type=str,
+        default=None,
+        help="Path to logo image to embed in QR code center (PNG, JPG, or SVG)",
+    )
+
     return parser.parse_args()
 
 
-def main() -> int:
+def main() -> int:  # pylint: disable=too-many-locals,too-many-branches,too-many-statements
     """Main application entry point."""
     args = parse_arguments()
 
@@ -626,10 +725,11 @@ def main() -> int:
                         title=args.title,
                         subtitle=args.subtitle,
                         show_footer=not args.no_footer,
+                        logo_path=args.logo,
                     )
                     generated_count += 1
                     print(f"  [{generated_count}/{len(themes)}] ✓ {theme.name}")
-                except Exception as e:
+                except (ValueError, OSError, IOError) as e:
                     print(f"  ✗ Failed to generate PDF for {theme.name}: {e}")
 
             print("-" * 60)
@@ -667,6 +767,7 @@ def main() -> int:
                 title=args.title,
                 subtitle=args.subtitle,
                 show_footer=not args.no_footer,
+                logo_path=args.logo,
             )
         return 0
     except ValueError as e:
@@ -676,9 +777,8 @@ def main() -> int:
         print("WIFI_PASSWORD=YourPassword")
         print("WIFI_SECURITY=WPA2")
         return 1
-    except Exception as e:
+    except (OSError, IOError, yaml.YAMLError) as e:
         print(f"An error occurred: {e}")
-        import traceback
         traceback.print_exc()
         return 1
 

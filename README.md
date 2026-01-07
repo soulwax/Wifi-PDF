@@ -1,11 +1,14 @@
 # WiFi QR Code PDF Generator
 
+[![Lint](https://github.com/YOUR_USERNAME/pywifipdf/actions/workflows/lint.yml/badge.svg)](https://github.com/YOUR_USERNAME/pywifipdf/actions/workflows/lint.yml)
+
 A Python program that generates beautifully designed A4 PDFs with WiFi QR codes and connection details. Perfect for creating printable WiFi access cards for guests, offices, or events.
 
 ## Features
 
 - 🎨 **7+ Professional Design Themes** - Choose from FritzBox, Red, Minimal, Corporate, Green, Purple, and Dark themes
 - 📱 **QR Code Generation** - Creates WiFi QR codes from scratch (no image files needed)
+- 🖼️ **Logo Support** - Embed logos in QR code center (PNG, JPG, SVG) while maintaining scannability
 - 🎯 **Fully Customizable** - Adjust QR size, titles, subtitles, and more via command-line arguments
 - 📋 **Connection Details** - Automatically displays SSID, password, and security type for manual entry
 - 📄 **A4 Format** - Optimized for printing and standard paper sizes
@@ -70,6 +73,8 @@ This will install:
 - `Pillow` - Image processing
 - `qrcode` - QR code generation
 - `python-dotenv` - Environment variable management
+- `PyYAML` - Theme configuration parsing
+- `cairosvg` - SVG logo support (for SVG logos)
 
 #### 3. Verify Installation
 
@@ -154,6 +159,12 @@ python -m src.main --theme green --subtitle "Scan to connect instantly" --no-foo
 
 # Minimal theme with all customizations
 python -m src.main -t minimal -s 0.3 --title "Company WiFi" --subtitle "For employees only"
+
+# With logo embedded in QR code
+python -m src.main --theme corporate --logo company_logo.png
+
+# With logo embedded in QR code
+python -m src.main --theme corporate --logo company_logo.png
 ```
 
 ### List Available Themes
@@ -217,6 +228,7 @@ python -m src.main [OPTIONS]
 | `--title` | - | string | `"WiFi Network Access"` | Custom title text |
 | `--subtitle` | - | string | Auto-generated | Custom subtitle text |
 | `--no-footer` | - | flag | Footer shown | Hide footer text |
+| `--logo` | - | string | None | Path to logo image (PNG, JPG, or SVG) |
 | `--list-themes` | - | flag | - | List all available themes |
 | `--themes-file` | - | string | `themes.yaml` | Path to themes YAML file |
 
@@ -255,6 +267,42 @@ Custom subtitle text displayed below the title. Use quotes for multi-word subtit
 #### `--no-footer`
 
 Hide the footer text at the bottom of the PDF. Useful for cleaner designs.
+
+#### `--logo`
+
+Embed a logo image in the center of the QR code. Supports PNG, JPG, and SVG formats.
+
+**Features:**
+- Logo is automatically resized to fit appropriately (about 1/3 of QR code size)
+- White background is added around the logo for better QR code readability
+- QR code uses higher error correction (H-level) when logo is present to ensure scannability
+- SVG files require `cairosvg` package (included in requirements.txt)
+
+**Example:**
+```bash
+python -m src.main --theme fritzbox --logo company_logo.png
+python -m src.main --theme corporate --logo logo.svg
+```
+
+**Note:** The QR code remains fully scannable even with the logo embedded, thanks to high error correction.
+
+#### `--logo`
+
+Embed a logo image in the center of the QR code. Supports PNG, JPG, and SVG formats.
+
+**Features:**
+- Logo is automatically resized to fit appropriately (about 1/3 of QR code size)
+- White background is added around the logo for better QR code readability
+- QR code uses higher error correction (H-level) when logo is present to ensure scannability
+- SVG files require `cairosvg` package (included in requirements.txt)
+
+**Example:**
+```bash
+python -m src.main --theme fritzbox --logo company_logo.png
+python -m src.main --theme corporate --logo logo.svg
+```
+
+**Note:** The QR code remains fully scannable even with the logo embedded, thanks to high error correction.
 
 #### `--list-themes`
 
@@ -523,6 +571,24 @@ Suggestions and improvements are welcome! Some ideas:
 - Additional customization options
 - Layout variations
 - Language support
+
+### Development
+
+The project uses automated linting via GitHub Actions. To run linting locally:
+
+```bash
+# Install dev dependencies
+pip install -r requirements-dev.txt
+
+# Run pylint
+pylint src/main.py --max-line-length=100 --fail-under=9.5
+
+# Check code formatting
+black --check src/
+
+# Check import sorting
+isort --check-only src/
+```
 
 ---
 
