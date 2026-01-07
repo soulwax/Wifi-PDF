@@ -1,0 +1,137 @@
+# Design Themes Configuration
+# This file contains all design theme specifications for the WiFi QR Code PDF generator
+# You can modify existing themes or add new ones by following the structure below
+
+themes:
+  fritzbox:
+    name: "FritzBox"
+    description: "Professional blue theme - Clean, modern FritzBox-style design"
+    colors:
+      primary: "#0066CC"
+      secondary: "#004499"
+      accent: "#0066CC"
+      background: "#FFFFFF"
+      info_box: "#E6F2FF"
+      text: "#333333"
+      text_secondary: "#666666"
+      border: "#CCCCCC"
+      title: "#FFFFFF"
+    layout:
+      has_top_bar: true
+      has_border: false
+      border_width: 0
+      corner_size: 0
+
+  red:
+    name: "Red"
+    description: "Bold red theme with decorative borders and corner accents"
+    colors:
+      primary: "#DC143C"
+      secondary: "#8B0000"
+      accent: "#FF6B6B"
+      background: "#FFF5F5"
+      info_box: "#FFFFFF"
+      text: "#333333"
+      text_secondary: "#666666"
+      border: "#DC143C"
+      title: "#FFFFFF"
+    layout:
+      has_top_bar: true
+      has_border: true
+      border_width: 15
+      corner_size: 30
+
+  minimal:
+    name: "Minimal"
+    description: "Clean, minimal design with subtle colors"
+    colors:
+      primary: "#2C3E50"
+      secondary: "#34495E"
+      accent: "#3498DB"
+      background: "#FFFFFF"
+      info_box: "#F8F9FA"
+      text: "#2C3E50"
+      text_secondary: "#7F8C8D"
+      border: "#E0E0E0"
+      title: "#2C3E50"
+    layout:
+      has_top_bar: false
+      has_border: false
+      border_width: 0
+      corner_size: 0
+
+  corporate:
+    name: "Corporate"
+    description: "Professional corporate blue theme"
+    colors:
+      primary: "#1E3A5F"
+      secondary: "#2C5282"
+      accent: "#3182CE"
+      background: "#F7FAFC"
+      info_box: "#EDF2F7"
+      text: "#1A202C"
+      text_secondary: "#4A5568"
+      border: "#CBD5E0"
+      title: "#FFFFFF"
+    layout:
+      has_top_bar: true
+      has_border: false
+      border_width: 0
+      corner_size: 0
+
+  green:
+    name: "Green"
+    description: "Fresh green theme with nature-inspired colors"
+    colors:
+      primary: "#2D8659"
+      secondary: "#1E5D3F"
+      accent: "#48BB78"
+      background: "#F0FFF4"
+      info_box: "#C6F6D5"
+      text: "#22543D"
+      text_secondary: "#4A5568"
+      border: "#9AE6B4"
+      title: "#FFFFFF"
+    layout:
+      has_top_bar: true
+      has_border: false
+      border_width: 0
+      corner_size: 0
+
+  purple:
+    name: "Purple"
+    description: "Elegant purple theme"
+    colors:
+      primary: "#6B46C1"
+      secondary: "#553C9A"
+      accent: "#9F7AEA"
+      background: "#FAF5FF"
+      info_box: "#E9D5FF"
+      text: "#4C1D95"
+      text_secondary: "#6B7280"
+      border: "#C4B5FD"
+      title: "#FFFFFF"
+    layout:
+      has_top_bar: true
+      has_border: false
+      border_width: 0
+      corner_size: 0
+
+  dark:
+    name: "Dark"
+    description: "Dark mode theme with light text on dark background"
+    colors:
+      primary: "#60A5FA"
+      secondary: "#3B82F6"
+      accent: "#93C5FD"
+      background: "#1F2937"
+      info_box: "#374151"
+      text: "#F9FAFB"
+      text_secondary: "#D1D5DB"
+      border: "#4B5563"
+      title: "#60A5FA"
+    layout:
+      has_top_bar: true
+      has_border: false
+      border_width: 0
+      corner_size: 0
