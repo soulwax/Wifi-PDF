@@ -498,8 +498,8 @@ python generate_pdf.py --theme mytheme --themes-file custom-themes.yaml
 
 ## Project Structure
 
-```
-pywifipdf/
+```plaintext
+./
 ├── generate_pdf.py      # Main program
 ├── themes.yaml          # Design theme configurations
 ├── requirements.txt     # Python dependencies

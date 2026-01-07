@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# File: generate_pdf.py
+
 """
 Generate a beautiful red-themed A4 PDF with a WiFi QR code generated from .env file.
 """
@@ -289,9 +291,11 @@ def create_pdf(
         qr_display_height = max_qr_size
         qr_display_width = max_qr_size * aspect_ratio
 
-    # Position QR code in upper center area
+    # Position QR code - leave space for title/subtitle at top
+    # Title area: accent bar (8mm) + title (30mm) + subtitle (20mm) + spacing (20mm) = ~78mm
+    top_space = accent_height + 30 * mm + 25 * mm + 20 * mm if theme.has_top_bar else 30 * mm + 25 * mm + 20 * mm
     qr_x = (width - qr_display_width) / 2
-    qr_y = height - 100 * mm - qr_display_height
+    qr_y = height - top_space - qr_display_height
 
     # Draw subtle frame around QR code (Fritz!Box style)
     frame_padding = 15 * mm
@@ -321,23 +325,30 @@ def create_pdf(
         if os.path.exists(tmp_path):
             os.unlink(tmp_path)
 
-    # Add title text
-    title_y = height - 25 * mm
+    # Add title text (in the accent bar if it exists, otherwise below it)
+    if theme.has_top_bar:
+        title_y = height - accent_height + 2 * mm  # Inside the accent bar
+    else:
+        title_y = height - 25 * mm  # Below where accent bar would be
     c.setFillColor(title_color)
     c.setFont("Helvetica-Bold", 24)
     text_width = c.stringWidth(title, "Helvetica-Bold", 24)
     c.drawString((width - text_width) / 2, title_y - 4 * mm, title)
 
-    # Add subtitle below accent bar
+    # Add subtitle below title with proper spacing
     if subtitle:
-        subtitle_y = height - (accent_height if theme.has_top_bar else 0) - 20 * mm
+        subtitle_y = title_y - 30 * mm  # Below title with spacing
         c.setFillColor(text_secondary)
         c.setFont("Helvetica", 14)
         subtitle_width = c.stringWidth(subtitle, "Helvetica", 14)
         c.drawString((width - subtitle_width) / 2, subtitle_y, subtitle)
 
-    # Display WiFi information in a clean, organized layout (Fritz!Box style)
-    info_start_y = qr_y - 100 * mm
+    # Display WiFi information RIGHT BELOW the QR code
+    # qr_y is the bottom of the QR code, frame extends frame_padding below it
+    # So bottom of frame is at: qr_y - frame_padding
+    # Position connection details below the frame with spacing
+    frame_bottom = qr_y - frame_padding
+    info_start_y = frame_bottom - 30 * mm  # Below QR code frame with spacing
 
     # WiFi info box dimensions
     info_box_width = width * 0.75
@@ -351,10 +362,10 @@ def create_pdf(
     section_title_width = c.stringWidth(section_title, "Helvetica-Bold", 18)
     c.drawString(info_box_x, section_title_y, section_title)
 
-    # Draw info boxes
+    # Draw info boxes - positioned below section title
     box_height = 20 * mm
     box_spacing = 5 * mm
-    box_y = section_title_y - 30 * mm
+    box_y = section_title_y - 25 * mm  # Below section title with spacing
 
     # SSID Box
     c.setFillColor(info_box_color)
@@ -474,6 +485,12 @@ Examples:
         help="Path to themes YAML file (default: themes.yaml)",
     )
 
+    parser.add_argument(
+        "--all",
+        action="store_true",
+        help="Generate PDFs for all available themes",
+    )
+
     return parser.parse_args()
 
 
@@ -501,19 +518,9 @@ if __name__ == "__main__":
         wifi_data = load_wifi_data_from_env()
         print(f"✓ Loaded WiFi data: {wifi_data.get('SSID', 'Unknown')}")
 
-        # Get selected theme
+        # Get all themes
         themes = get_design_themes(args.themes_file)
-        if args.theme not in themes:
-            print(f"Warning: Theme '{args.theme}' not found in {args.themes_file}")
-            print(f"Available themes: {', '.join(themes.keys())}")
-            print("Using default 'fritzbox' theme...")
-            args.theme = "fritzbox"
-        selected_theme = themes.get(
-            args.theme, list(themes.values())[0] if themes else None
-        )
-        if selected_theme:
-            print(f"✓ Using theme: {selected_theme.name} (from {args.themes_file})")
-        else:
+        if not themes:
             raise ValueError("No themes available. Please check themes.yaml file.")
 
         # Create output directory if it doesn't exist
@@ -522,24 +529,73 @@ if __name__ == "__main__":
             os.makedirs(output_dir)
             print(f"✓ Created output directory: {output_dir}")
 
-        # Generate hash from nanoseconds since 1970
-        nanoseconds = time.time_ns()
-        hash_obj = hashlib.sha256(str(nanoseconds).encode())
-        hash_hex = hash_obj.hexdigest()
+        # Handle --all flag: generate PDFs for all themes
+        if args.all:
+            print(f"✓ Generating PDFs for all {len(themes)} themes...")
+            print("-" * 60)
+            generated_count = 0
+            
+            for theme_key, theme in themes.items():
+                try:
+                    # Generate unique hash for each PDF (timestamp + theme name)
+                    nanoseconds = time.time_ns()
+                    hash_input = f"{nanoseconds}{theme_key}{args.qr_size}"
+                    hash_obj = hashlib.sha256(hash_input.encode())
+                    hash_hex = hash_obj.hexdigest()
+                    
+                    # Create PDF filename with hash
+                    output_pdf = os.path.join(output_dir, f"{hash_hex}.pdf")
+                    
+                    # Create PDF for this theme
+                    create_pdf(
+                        wifi_data,
+                        output_pdf,
+                        theme=theme,
+                        qr_size=args.qr_size,
+                        title=args.title,
+                        subtitle=args.subtitle,
+                        show_footer=not args.no_footer,
+                    )
+                    generated_count += 1
+                    print(f"  [{generated_count}/{len(themes)}] ✓ {theme.name}")
+                except Exception as e:
+                    print(f"  ✗ Failed to generate PDF for {theme.name}: {e}")
+            
+            print("-" * 60)
+            print(f"✓ Successfully generated {generated_count}/{len(themes)} PDFs")
+        else:
+            # Single theme mode
+            if args.theme not in themes:
+                print(f"Warning: Theme '{args.theme}' not found in {args.themes_file}")
+                print(f"Available themes: {', '.join(themes.keys())}")
+                print("Using default 'fritzbox' theme...")
+                args.theme = "fritzbox"
+            selected_theme = themes.get(
+                args.theme, list(themes.values())[0] if themes else None
+            )
+            if selected_theme:
+                print(f"✓ Using theme: {selected_theme.name} (from {args.themes_file})")
+            else:
+                raise ValueError("No themes available. Please check themes.yaml file.")
 
-        # Create PDF filename with hash
-        output_pdf = os.path.join(output_dir, f"{hash_hex}.pdf")
+            # Generate hash from nanoseconds since 1970
+            nanoseconds = time.time_ns()
+            hash_obj = hashlib.sha256(str(nanoseconds).encode())
+            hash_hex = hash_obj.hexdigest()
 
-        # Create PDF
-        create_pdf(
-            wifi_data,
-            output_pdf,
-            theme=selected_theme,
-            qr_size=args.qr_size,
-            title=args.title,
-            subtitle=args.subtitle,
-            show_footer=not args.no_footer,
-        )
+            # Create PDF filename with hash
+            output_pdf = os.path.join(output_dir, f"{hash_hex}.pdf")
+
+            # Create PDF
+            create_pdf(
+                wifi_data,
+                output_pdf,
+                theme=selected_theme,
+                qr_size=args.qr_size,
+                title=args.title,
+                subtitle=args.subtitle,
+                show_footer=not args.no_footer,
+            )
     except ValueError as e:
         print(f"Error: {e}")
         print("\nPlease create a .env file with the following variables:")
